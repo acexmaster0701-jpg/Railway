@@ -160,10 +160,10 @@ const PRICES = {
   }
 };
 
-// ── USD approximations with $1.00 added ──────────────────────────────
+// ── USD approximations with $0.75 added ──────────────────────────────
 function getUSDApprox(idr) {
   const baseUSD = idr / 17000;
-  const withTax = baseUSD + 1.00;
+  const withTax = baseUSD + 0.75;
   return `$${withTax.toFixed(2)} USD`;
 }
 
