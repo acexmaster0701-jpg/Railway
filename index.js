@@ -160,9 +160,11 @@ const PRICES = {
   }
 };
 
-// ── USD approximations ──────────────────────────────────────────────────
+// ── USD approximations with $1.00 added ──────────────────────────────
 function getUSDApprox(idr) {
-  return `$${(idr / 17000).toFixed(2)} USD`;
+  const baseUSD = idr / 17000;
+  const withTax = baseUSD + 1.00;
+  return `$${withTax.toFixed(2)} USD`;
 }
 
 function formatPriceIDRUSD(idr) {
@@ -2431,7 +2433,7 @@ async function handleSelect(interaction) {
         .addOptions([
           { label: "Script", description: "Choose script type", emoji: "📜", value: "script" },
           { label: "External", description: "External cheat", emoji: "🎮", value: "external" },
-          { label: "Ingame Currency", description: "South Bronx Cash", emoji: "💰", value: "currency" } // Changed from "Game Currency" to "Ingame Currency"
+          { label: "Ingame Currency", description: "South Bronx Cash", emoji: "💰", value: "currency" }
         ]);
 
       await ch.send({
