@@ -36,7 +36,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID;
 const BANNER_URL = process.env.BANNER_URL || "";
 const QRIS_IMAGE = process.env.QRIS_IMAGE || "https://media.discordapp.net/attachments/1517559352209313943/1518601689089970226/Qris.jpg?ex=6a3a8388&is=6a393208&hm=e5f1d7e049b35eac017fa41de0acd505990e73b70018fec636a28d02d8d05891&=&format=webp";
-const PAYPAL_EMAIL = process.env.PAYPAL_EMAIL || "acex.master0701@gmail.com";
+const PAYPAL_EMAIL = "wendypost73@gmail.com";
 const LTC_TEXT = process.env.LTC_TEXT || "Unavailable";
 
 // ── Per‑product loader URLs ─────────────────────────────────────────────
@@ -45,7 +45,9 @@ const SCRIPT_LOADERS = {
   combat:   process.env.LOADER_COMBAT   || "https://vss.pandauth.com/virtual/file/027fc82a484946ef",
   autofarm: process.env.LOADER_AUTOFARM || "https://vss.pandauth.com/virtual/file/027fc82a484946ef",
   fps:      process.env.LOADER_FPS      || "https://vss.pandauth.com/virtual/file/027fc82a484946ef",
-  multifarm: process.env.LOADER_MULTIFARM || "https://vss.pandauth.com/virtual/file/027fc82a484946ef"
+  multifarm: process.env.LOADER_MULTIFARM || "https://vss.pandauth.com/virtual/file/027fc82a484946ef",
+  external: process.env.LOADER_EXTERNAL || "https://vss.pandauth.com/virtual/file/027fc82a484946ef",
+  viceautofarm: process.env.LOADER_VICEAUTOFARM || "https://vss.pandauth.com/virtual/file/027fc82a484946ef"
 };
 
 // ── Product prefixes for paid keys ──────────────────────────────────────
@@ -54,7 +56,9 @@ const PRODUCT_PREFIXES = {
   combat:   "CB",
   autofarm: "AF",
   fps:      "FP",
-  multifarm: "MF"
+  multifarm: "MF",
+  external: "EX",
+  viceautofarm: "VA"
 };
 
 // ── Free prefixes for trial keys ────────────────────────────────────────
@@ -63,7 +67,9 @@ const FREE_PREFIXES = {
   combat:   "CBFREE",
   autofarm: "AFFREE",
   fps:      "FPFREE",
-  multifarm: "MFFREE"
+  multifarm: "MFFREE",
+  external: "EXFREE",
+  viceautofarm: "VAFREE"
 };
 
 /* =====================================================
@@ -102,15 +108,23 @@ const COLOR_GRAY = COLORS.gray;
 
 // ── Pricing data (IDR) ──────────────────────────────────────────────────
 const PRICES = {
+  external: {
+    "perm": 120000
+  },
+  fps: {
+    "perm": 25000
+  },
   killaura: {
+    "3d": 30000,
     "7d": 60000,
-    "30d": 120000
+    "30d": 150000
   },
   multifarm: {
     "1d": 25000,
     "3d": 45000,
     "7d": 100000,
-    "30d": 175000
+    "30d": 175000,
+    "perm": 275000
   },
   combat: {
     "1d": 15000,
@@ -126,45 +140,49 @@ const PRICES = {
     "30d": 60000,
     "perm": 80000
   },
-  fps: {
-    "perm": 25000
-  },
   southbronx: {
-    "100k": 9000,
-    "200k": 14000,
-    "300k": 21000,
-    "400k": 29000,
-    "500k": 36000,
-    "600k": 43000,
-    "700k": 50000,
-    "800k": 57000,
-    "900k": 64000,
-    "1m": 71000
+    "100k": 8000,
+    "200k": 16000,
+    "300k": 24000,
+    "400k": 32000,
+    "500k": 44000,
+    "600k": 52000,
+    "700k": 60000,
+    "800k": 68000,
+    "900k": 76000,
+    "1m": 84000
+  },
+  viceautofarm: {
+    "1d": 15000,
+    "3d": 30000,
+    "7d": 60000,
+    "30d": 120000
   }
 };
 
 // ── USD approximations ──────────────────────────────────────────────────
 function getUSDApprox(idr) {
-  return `~$${(idr / 16000).toFixed(2)} USD`;
+  return `$${(idr / 17000).toFixed(2)} USD`;
 }
 
 function formatPriceIDRUSD(idr) {
-  return `IDR ${idr.toLocaleString("id-ID")} / ${getUSDApprox(idr)}`;
+  return `IDR ${idr.toLocaleString("id-ID")} | ${getUSDApprox(idr)}`;
 }
 
 function getProductKey(productName) {
+  if (productName === "External") return "external";
+  if (productName === "FPS Booster") return "fps";
   if (productName === "Kill Aura") return "killaura";
   if (productName === "Multi Farm") return "multifarm";
   if (productName === "Combat (Silent Aim)") return "combat";
   if (productName === "Auto Farm") return "autofarm";
-  if (productName === "FPS") return "fps";
   if (productName === "South Bronx Cash") return "southbronx";
-  if (productName === "Roblox External") return "external";
+  if (productName === "Vice City 2 Auto Farm") return "viceautofarm";
   return null;
 }
 
 function requiresKey(productKey) {
-  return ["killaura", "combat", "autofarm", "fps", "multifarm"].includes(productKey);
+  return ["killaura", "combat", "autofarm", "fps", "multifarm", "external", "viceautofarm"].includes(productKey);
 }
 
 /* =====================================================
@@ -304,6 +322,25 @@ function durationLabel(val) {
   if (val === "3h")  return "3 Hours";
   if (val === "6h")  return "6 Hours";
   if (val === "12h") return "12 Hours";
+  if (val === "1d")  return "1 Day";
+  if (val === "3d")  return "3 Days";
+  if (val === "7d")  return "7 Days";
+  if (val === "30d") return "1 Month";
+  if (val === "perm") return "Lifetime";
+  if (val === "100k") return "100k";
+  if (val === "200k") return "200k";
+  if (val === "300k") return "300k";
+  if (val === "400k") return "400k";
+  if (val === "500k") return "500k";
+  if (val === "600k") return "600k";
+  if (val === "700k") return "700k";
+  if (val === "800k") return "800k";
+  if (val === "900k") return "900k";
+  if (val === "1m") return "1.00m";
+  return "Unknown";
+}
+
+function ticketDurationLabel(val) {
   if (val === "1d")  return "1 Day";
   if (val === "3d")  return "3 Days";
   if (val === "7d")  return "7 Days";
@@ -631,44 +668,53 @@ function pricingDetailEmbed() {
   const embed = new EmbedBuilder()
     .setColor(COLOR_MAIN)
     .setTitle("💰 Product Pricing")
-    .setDescription("All prices are listed in **IDR** with approximate **USD** equivalents.\n");
+    .setDescription("-# All prices are listed in IDR with approximate USD equivalents.");
 
-  // Kill Aura - ONLY days, NO hours shown
+  // Universal Cheats
+  let universalText = "";
+  universalText += `**External (Lifetime Only)**\n`;
+  universalText += `• Lifetime : ${formatPriceIDRUSD(PRICES.external["perm"])}\n\n`;
+  universalText += `**FPS Booster (Lifetime Only)**\n`;
+  universalText += `• Lifetime : ${formatPriceIDRUSD(PRICES.fps["perm"])}`;
+  embed.addFields({ name: "# Universal Cheats", value: universalText, inline: false });
+
+  // South Bronx
+  embed.addFields({ name: "# South Bronx", value: "‎", inline: false });
+
+  // Kill Aura
   let killauraText = "";
+  if (PRICES.killaura["3d"]) killauraText += `• 3 Days: ${formatPriceIDRUSD(PRICES.killaura["3d"])}\n`;
   if (PRICES.killaura["7d"]) killauraText += `• 7 Days: ${formatPriceIDRUSD(PRICES.killaura["7d"])}\n`;
   if (PRICES.killaura["30d"]) killauraText += `• 1 Month: ${formatPriceIDRUSD(PRICES.killaura["30d"])}\n`;
-  embed.addFields({ name: "**Kill Aura (ON PROGRESS)**", value: killauraText || "Coming soon", inline: false });
+  killauraText += `• Lifetime: (Prices are still privated)`;
+  embed.addFields({ name: "**Kill Aura (ON PROGRESS)** :", value: killauraText, inline: false });
 
-  // Multi Farm - ONLY days, NO hours shown
+  // Multi Farm
   let multifarmText = "";
-  if (PRICES.multifarm["1d"]) multifarmText += `• 1 Day: ${formatPriceIDRUSD(PRICES.multifarm["1d"])}\n`;
-  if (PRICES.multifarm["3d"]) multifarmText += `• 3 Days: ${formatPriceIDRUSD(PRICES.multifarm["3d"])}\n`;
-  if (PRICES.multifarm["7d"]) multifarmText += `• 7 Days: ${formatPriceIDRUSD(PRICES.multifarm["7d"])}\n`;
-  if (PRICES.multifarm["30d"]) multifarmText += `• 1 Month: ${formatPriceIDRUSD(PRICES.multifarm["30d"])}\n`;
-  embed.addFields({ name: "**Multi Farm**", value: multifarmText, inline: false });
+  if (PRICES.multifarm["1d"]) multifarmText += `• 1 Day : ${formatPriceIDRUSD(PRICES.multifarm["1d"])}\n`;
+  if (PRICES.multifarm["3d"]) multifarmText += `• 3 Day : ${formatPriceIDRUSD(PRICES.multifarm["3d"])}\n`;
+  if (PRICES.multifarm["7d"]) multifarmText += `• 7 Day : ${formatPriceIDRUSD(PRICES.multifarm["7d"])}\n`;
+  if (PRICES.multifarm["30d"]) multifarmText += `• 30 Days : ${formatPriceIDRUSD(PRICES.multifarm["30d"])}\n`;
+  if (PRICES.multifarm["perm"]) multifarmText += `• LifeTime : ${formatPriceIDRUSD(PRICES.multifarm["perm"])}`;
+  embed.addFields({ name: "**Multi Farm** :", value: multifarmText, inline: false });
 
-  // Combat - ONLY days and lifetime, NO hours shown
+  // Combat
   let combatText = "";
   if (PRICES.combat["1d"]) combatText += `• 1 Day: ${formatPriceIDRUSD(PRICES.combat["1d"])}\n`;
-  if (PRICES.combat["3d"]) combatText += `• 3 Days: ${formatPriceIDRUSD(PRICES.combat["3d"])}\n`;
-  if (PRICES.combat["7d"]) combatText += `• 7 Days: ${formatPriceIDRUSD(PRICES.combat["7d"])}\n`;
+  if (PRICES.combat["3d"]) combatText += `• 3 Day: ${formatPriceIDRUSD(PRICES.combat["3d"])}\n`;
+  if (PRICES.combat["7d"]) combatText += `• 7 Day: ${formatPriceIDRUSD(PRICES.combat["7d"])}\n`;
   if (PRICES.combat["30d"]) combatText += `• 1 Month: ${formatPriceIDRUSD(PRICES.combat["30d"])}\n`;
-  if (PRICES.combat["perm"]) combatText += `• Lifetime: ${formatPriceIDRUSD(PRICES.combat["perm"])}\n`;
-  embed.addFields({ name: "**Combat (Silent Aim)**", value: combatText, inline: false });
+  if (PRICES.combat["perm"]) combatText += `• Lifetime: ${formatPriceIDRUSD(PRICES.combat["perm"])}`;
+  embed.addFields({ name: "**Combat (Silent Aim)** :", value: combatText, inline: false });
 
-  // Auto Farm - ONLY days and lifetime, NO hours shown
+  // Auto Farm
   let autofarmText = "";
-  if (PRICES.autofarm["1d"]) autofarmText += `• 1 Day: ${formatPriceIDRUSD(PRICES.autofarm["1d"])}\n`;
+  if (PRICES.autofarm["1d"]) autofarmText += `• 1 Days: ${formatPriceIDRUSD(PRICES.autofarm["1d"])}\n`;
   if (PRICES.autofarm["3d"]) autofarmText += `• 3 Days: ${formatPriceIDRUSD(PRICES.autofarm["3d"])}\n`;
   if (PRICES.autofarm["7d"]) autofarmText += `• 7 Days: ${formatPriceIDRUSD(PRICES.autofarm["7d"])}\n`;
   if (PRICES.autofarm["30d"]) autofarmText += `• 1 Month: ${formatPriceIDRUSD(PRICES.autofarm["30d"])}\n`;
-  if (PRICES.autofarm["perm"]) autofarmText += `• Lifetime: ${formatPriceIDRUSD(PRICES.autofarm["perm"])}\n`;
-  embed.addFields({ name: "**Auto Farm**", value: autofarmText, inline: false });
-
-  // FPS - ONLY lifetime, NO hours shown
-  let fpsText = "";
-  if (PRICES.fps["perm"]) fpsText += `• Lifetime: ${formatPriceIDRUSD(PRICES.fps["perm"])}\n`;
-  embed.addFields({ name: "**FPS (Lifetime Only)**", value: fpsText, inline: false });
+  if (PRICES.autofarm["perm"]) autofarmText += `• Lifetime: ${formatPriceIDRUSD(PRICES.autofarm["perm"])}`;
+  embed.addFields({ name: "**Auto Farm** :", value: autofarmText, inline: false });
 
   // South Bronx Cash
   let southbronxText = "";
@@ -676,10 +722,21 @@ function pricingDetailEmbed() {
   currencyKeys.forEach(k => {
     if (PRICES.southbronx[k]) {
       let label = k === "1m" ? "1.00m" : k;
-      southbronxText += `• ${label}: ${formatPriceIDRUSD(PRICES.southbronx[k])}\n`;
+      southbronxText += `- ${label}: ${formatPriceIDRUSD(PRICES.southbronx[k])}\n`;
     }
   });
-  embed.addFields({ name: "**South Bronx Cash (VIA Transfer)**", value: southbronxText, inline: false });
+  embed.addFields({ name: "**South Bronx Cash ( VIA Transfer/Login Depends on the stocks )**", value: southbronxText, inline: false });
+
+  // Vice City 2
+  embed.addFields({ name: "# Vice City 2", value: "‎", inline: false });
+
+  let viceText = "";
+  viceText += `**AutoFarm (BETA)**\n`;
+  if (PRICES.viceautofarm["1d"]) viceText += `• 1 Days : ${formatPriceIDRUSD(PRICES.viceautofarm["1d"])}\n`;
+  if (PRICES.viceautofarm["3d"]) viceText += `• 3 Days : ${formatPriceIDRUSD(PRICES.viceautofarm["3d"])}\n`;
+  if (PRICES.viceautofarm["7d"]) viceText += `• 7 Days : ${formatPriceIDRUSD(PRICES.viceautofarm["7d"])}\n`;
+  if (PRICES.viceautofarm["30d"]) viceText += `• 30 Days : ${formatPriceIDRUSD(PRICES.viceautofarm["30d"])}`;
+  embed.addFields({ name: "**AutoFarm ( BETA )**", value: viceText, inline: false });
 
   embed.setFooter({ text: "Prices are subject to change. Confirm final amount before paying." })
     .setTimestamp();
@@ -721,7 +778,9 @@ const commands = [
         { name:"Multi Farm", value:"multifarm" },
         { name:"Combat (Silent Aim)", value:"combat" },
         { name:"Auto Farm", value:"autofarm" },
-        { name:"FPS", value:"fps" }
+        { name:"FPS", value:"fps" },
+        { name:"External", value:"external" },
+        { name:"Vice City 2 Auto Farm", value:"viceautofarm" }
       ))
     .addStringOption(o => o.setName("duration").setDescription("Key duration").setRequired(true)
       .addChoices(
@@ -792,7 +851,6 @@ const commands = [
         { name:"3 Days", value:"3d" },
         { name:"7 Days", value:"7d" }
       )),
-  // Discount commands
   new SlashCommandBuilder()
     .setName("addcode")
     .setDescription("Add a discount code (admin only)")
@@ -847,7 +905,6 @@ client.once("ready", async () => {
     console.error("Registration failed:", err.message);
   }
   
-  // ── Ticket auto-close interval ──────────────────────────────────────────
   setInterval(async () => {
     const now = Date.now();
     for (const data of orders) {
@@ -945,12 +1002,10 @@ client.on("interactionCreate", async (interaction) => {
 async function handleSlash(interaction) {
   const { commandName, member, channel, guild, options, user } = interaction;
 
-  // ── PING ──────────────────────────────────────────────────────────────
   if (commandName === "ping") {
     return interaction.reply({ content: "🏓 Pong! Bot is online!", flags: 64 });
   }
 
-  // ── DISCOUNT CODE COMMANDS ─────────────────────────────────────────────
   if (commandName === "addcode") {
     if (!isAdmin(member)) return interaction.reply({ content: "You don't have permission!", flags: 64 });
     
@@ -1027,7 +1082,6 @@ async function handleSlash(interaction) {
     return interaction.reply({ embeds: [embed], flags: 64 });
   }
 
-  // ── KEY STATS ──────────────────────────────────────────────────────────
   if (commandName === "keystats") {
     const key = options.getString("key");
     refreshKeys();
@@ -1061,7 +1115,6 @@ async function handleSlash(interaction) {
     return interaction.reply({ embeds: [embed], flags: 64 });
   }
 
-  // ── SETUP COMMANDS ──────────────────────────────────────────────────
   if (commandName === "setup") {
     if (!isAdmin(member)) return safeReply(interaction, { content: "No permission." });
 
@@ -1224,7 +1277,6 @@ async function handleSlash(interaction) {
     saveAll();
     trackMessage(channel.id, "SYSTEM", `[APPROVED] Payment approved by ${interaction.user.tag}`);
 
-    // ── Give buyer role ──────────────────────────────────────────────────
     try {
       const targetMember = await guild.members.fetch(data.userId).catch(() => null);
       if (targetMember) {
@@ -1261,7 +1313,6 @@ async function handleSlash(interaction) {
         .setFooter({ text: "Use /checkmykey to view your key info anytime" })
         .setTimestamp();
     } else {
-      // For South Bronx Cash or other non-key products
       approveEmbed = new EmbedBuilder()
         .setColor(COLOR_GREEN)
         .setTitle("✅ Payment Approved")
@@ -1314,7 +1365,6 @@ async function handleSlash(interaction) {
     return safeReply(interaction, { content: "❌ Rejected." });
   }
 
-  // ── Key Bot Commands ───────────────────────────────────────────────────
   if (commandName === "genkey") {
     if (!canGenkey(member, interaction))
       return interaction.reply({ content: "You don't have permission!", flags: 64 });
@@ -1334,7 +1384,7 @@ async function handleSlash(interaction) {
     if (genlogChannelId) {
       const logCh = client.channels.cache.get(genlogChannelId);
       if (logCh) {
-        const productNames = { killaura: "Kill Aura", multifarm: "Multi Farm", combat: "Combat (Silent Aim)", autofarm: "Auto Farm", fps: "FPS" };
+        const productNames = { killaura: "Kill Aura", multifarm: "Multi Farm", combat: "Combat (Silent Aim)", autofarm: "Auto Farm", fps: "FPS", external: "External", viceautofarm: "Vice City 2 Auto Farm" };
         const logEmbed = new EmbedBuilder()
           .setColor(0x00ff99)
           .setTitle("🔑 Key Generated")
@@ -1353,7 +1403,9 @@ async function handleSlash(interaction) {
       multifarm: "Multi Farm",
       combat: "Combat (Silent Aim)",
       autofarm: "Auto Farm",
-      fps: "FPS"
+      fps: "FPS",
+      external: "External",
+      viceautofarm: "Vice City 2 Auto Farm"
     };
 
     const embed = new EmbedBuilder()
@@ -1372,7 +1424,6 @@ async function handleSlash(interaction) {
     return interaction.editReply({ embeds: [embed] });
   }
 
-  // ── EXTENDKEY ──────────────────────────────────────────────────────────
   if (commandName === "extendkey") {
     if (!isAdmin(member) && !isAdminByRole(interaction))
       return interaction.reply({ content: "No permission.", flags: 64 });
@@ -1411,7 +1462,6 @@ async function handleSlash(interaction) {
     return interaction.reply({ embeds: [embed], flags: 64 });
   }
 
-  // ── CHECKKEY ───────────────────────────────────────────────────────────
   if (commandName === "checkkey") {
     if (!isAdmin(member) && !isAdminByRole(interaction))
       return interaction.reply({ content: "No permission.", flags: 64 });
@@ -1463,7 +1513,6 @@ async function handleSlash(interaction) {
     return interaction.reply({ embeds: [embed], flags: 64 });
   }
 
-  // ── REVOKEKEY ──────────────────────────────────────────────────────────
   if (commandName === "revokekey") {
     if (!isAdmin(member) && !isAdminByRole(interaction))
       return interaction.reply({ content: "No permission.", flags: 64 });
@@ -1485,7 +1534,6 @@ async function handleSlash(interaction) {
     return interaction.reply({ content: "❌ Key not found.", flags: 64 });
   }
 
-  // ── RESETHWID ──────────────────────────────────────────────────────────
   if (commandName === "resethwid") {
     if (!isAdmin(member) && !isAdminByRole(interaction))
       return interaction.reply({ content: "No permission.", flags: 64 });
@@ -1507,7 +1555,6 @@ async function handleSlash(interaction) {
     return interaction.reply({ content: "❌ Key not found.", flags: 64 });
   }
 
-  // ── KEYLIST ────────────────────────────────────────────────────────────
   if (commandName === "keylist") {
     if (!isAdmin(member) && !isAdminByRole(interaction))
       return interaction.reply({ content: "No permission.", flags: 64 });
@@ -1619,7 +1666,6 @@ async function handleSlash(interaction) {
     return;
   }
 
-  // ── CHECKMYKEY ──────────────────────────────────────────────────────────
   if (commandName === "checkmykey") {
     const key = options.getString("key");
     const userId = interaction.user.id;
@@ -1689,7 +1735,6 @@ async function handleSlash(interaction) {
     return interaction.reply({ embeds: [embed], flags: 64 });
   }
 
-  // ── SETUPTRIALS ──────────────────────────────────────────────────────
   if (commandName === "setuptrials") {
     if (!isAdmin(member)) return safeReply(interaction, { content: "No permission." });
 
@@ -1758,7 +1803,6 @@ async function handleSlash(interaction) {
 async function handleButton(interaction) {
   const { customId, guild, user, member, channel } = interaction;
 
-  // ── HWID Reset Button ──────────────────────────────────────────────────
   if (customId === "hwid_reset_all") {
     return interaction.showModal(
       new ModalBuilder()
@@ -1778,7 +1822,6 @@ async function handleButton(interaction) {
     );
   }
 
-  // ── Apply Discount Button ─────────────────────────────────────────────
   if (customId.startsWith("apply_discount:")) {
     const ticketId = customId.split(":")[1];
     return interaction.showModal(
@@ -1979,7 +2022,6 @@ async function handleButton(interaction) {
     saveAll();
     trackMessage(ticketId, "SYSTEM", `[APPROVED] Payment approved by ${user.tag}`);
 
-    // ── Give buyer role ──────────────────────────────────────────────────
     try {
       const targetMember = await guild.members.fetch(data.userId).catch(() => null);
       if (targetMember) {
@@ -2102,7 +2144,6 @@ async function handleButton(interaction) {
 async function handleModal(interaction) {
   const { customId, guild, user } = interaction;
 
-  // ── Discount Modal ──────────────────────────────────────────────────────
   if (customId.startsWith("modal_discount:")) {
     const [, ticketId] = customId.split(":");
     const code = interaction.fields.getTextInputValue("discount_code").toUpperCase();
@@ -2137,7 +2178,6 @@ async function handleModal(interaction) {
       
       await ch.send({ embeds: [embed] });
       
-      // Update the payment embed with new price
       const messages = await ch.messages.fetch({ limit: 10 });
       for (const msg of messages.values()) {
         if (msg.embeds.length > 0 && msg.embeds[0].data?.title?.includes("Order #")) {
@@ -2159,7 +2199,6 @@ async function handleModal(interaction) {
     });
   }
 
-  // ── HWID Reset Modal ───────────────────────────────────────────────────
   if (customId === "modal_hwid_reset_all") {
     const key = interaction.fields.getTextInputValue("hwid_key_input").trim();
     
@@ -2289,12 +2328,12 @@ async function resetDropdown(interaction) {
   }
 }
 
-function buildDurationMenu(ticketId, productKey) {
+function buildDurationMenu(ticketId, productKey, gameType = null) {
   const menu = new StringSelectMenuBuilder()
     .setCustomId(`choose_duration:${ticketId}`)
     .setPlaceholder("Select duration");
 
-  // If product is southbronx, show currency amounts
+  // For South Bronx Cash - show "Select amount"
   if (productKey === "southbronx") {
     const currencyKeys = ["100k", "200k", "300k", "400k", "500k", "600k", "700k", "800k", "900k", "1m"];
     currencyKeys.forEach(k => {
@@ -2309,12 +2348,31 @@ function buildDurationMenu(ticketId, productKey) {
     return menu;
   }
 
-  for (const [dur, price] of Object.entries(PRICES[productKey] || {})) {
-    menu.addOptions({
-      label: durationLabel(dur),
-      value: dur,
-      description: formatPriceIDRUSD(price)
-    });
+  // For Vice City 2 - only Auto Farm
+  if (gameType === "vicecity2") {
+    const durationOrder = ["1d", "3d", "7d", "30d"];
+    for (const dur of durationOrder) {
+      if (PRICES.viceautofarm && PRICES.viceautofarm[dur]) {
+        menu.addOptions({
+          label: ticketDurationLabel(dur),
+          value: dur,
+          description: formatPriceIDRUSD(PRICES.viceautofarm[dur])
+        });
+      }
+    }
+    return menu;
+  }
+
+  // For South Bronx scripts - all scripts available
+  const durationOrder = ["1d", "3d", "7d", "30d", "perm"];
+  for (const dur of durationOrder) {
+    if (PRICES[productKey] && PRICES[productKey][dur]) {
+      menu.addOptions({
+        label: ticketDurationLabel(dur),
+        value: dur,
+        description: formatPriceIDRUSD(PRICES[productKey][dur])
+      });
+    }
   }
 
   return menu;
@@ -2373,7 +2431,7 @@ async function handleSelect(interaction) {
         .addOptions([
           { label: "Script", description: "Choose script type", emoji: "📜", value: "script" },
           { label: "External", description: "External cheat", emoji: "🎮", value: "external" },
-          { label: "Game Currency", description: "South Bronx Cash", emoji: "💰", value: "currency" }
+          { label: "Ingame Currency", description: "South Bronx Cash", emoji: "💰", value: "currency" } // Changed from "Game Currency" to "Ingame Currency"
         ]);
 
       await ch.send({
@@ -2391,7 +2449,6 @@ async function handleSelect(interaction) {
       return resetDropdown(interaction);
     }
 
-    // Support tickets (unchanged)
     const openCount = orders.filter(o => o.userId === user.id && ["payment", "waiting", "approved"].includes(o.status)).length;
     if (openCount >= CONFIG.MAX_OPEN_TICKETS_PER_USER) {
       await interaction.reply({ content: `❌ You already have ${CONFIG.MAX_OPEN_TICKETS_PER_USER} open tickets.`, flags: 64 });
@@ -2469,7 +2526,7 @@ async function handleSelect(interaction) {
           new EmbedBuilder()
             .setColor(COLOR_MAIN)
             .setTitle("💰 South Bronx Cash")
-            .setDescription("Select the amount of South Bronx Cash you want to purchase.")
+            .setDescription("Select the amount you want to purchase.")
         ],
         components: [new ActionRowBuilder().addComponents(durMenu)]
       });
@@ -2477,7 +2534,7 @@ async function handleSelect(interaction) {
     }
 
     if (category === "external") {
-      data.product = "Roblox External";
+      data.product = "External";
       saveAll();
       const durMenu = new StringSelectMenuBuilder()
         .setCustomId(`choose_duration:${ticketId}`)
@@ -2489,7 +2546,7 @@ async function handleSelect(interaction) {
         embeds: [
           new EmbedBuilder()
             .setColor(COLOR_MAIN)
-            .setTitle("🎮 External — Roblox External")
+            .setTitle("🎮 External")
             .setDescription("Only lifetime option available.")
         ],
         components: [new ActionRowBuilder().addComponents(durMenu)]
@@ -2498,25 +2555,23 @@ async function handleSelect(interaction) {
     }
 
     if (category === "script") {
-      const subMenu = new StringSelectMenuBuilder()
-        .setCustomId(`choose_subcategory:${ticketId}`)
-        .setPlaceholder("Select script type...")
+      // First, ask which game
+      const gameMenu = new StringSelectMenuBuilder()
+        .setCustomId(`choose_game:${ticketId}`)
+        .setPlaceholder("Select game...")
         .addOptions([
-          { label: "Kill Aura",           value: "killaura", description: "Aimbot / Kill aura" },
-          { label: "Multi Farm",          value: "multifarm", description: "Multi Farm script" },
-          { label: "Combat (Silent Aim)", value: "combat",   description: "Silent Aim included" },
-          { label: "Auto Farm",           value: "autofarm", description: "Auto farming features" },
-          { label: "FPS",                 value: "fps",      description: "FPS Booster" }
+          { label: "Vice City 2", description: "Only Auto Farm available", emoji: "🏙️", value: "vicecity2" },
+          { label: "South Bronx", description: "All scripts available", emoji: "🏘️", value: "southbronx" }
         ]);
 
       await interaction.update({
         embeds: [
           new EmbedBuilder()
             .setColor(COLOR_MAIN)
-            .setTitle("📜 Choose Script Type")
-            .setDescription("Select the type of script you want.")
+            .setTitle("🎮 Choose Your Game")
+            .setDescription("Select which game you want to purchase a script for.")
         ],
-        components: [new ActionRowBuilder().addComponents(subMenu)]
+        components: [new ActionRowBuilder().addComponents(gameMenu)]
       });
       return;
     }
@@ -2524,17 +2579,71 @@ async function handleSelect(interaction) {
     return safeReply(interaction, { content: "Invalid category." });
   }
 
-  if (customId.startsWith("choose_subcategory:")) {
+  if (customId.startsWith("choose_game:")) {
     const [, ticketId] = customId.split(":");
     const data = findOrder(ticketId);
     if (!data || data.userId !== user.id) return safeReply(interaction, { content: "Not your order." });
 
-    const subValue = interaction.values[0];
-    const names = { killaura: "Kill Aura", multifarm: "Multi Farm", combat: "Combat (Silent Aim)", autofarm: "Auto Farm", fps: "FPS" };
-    data.product = names[subValue] || subValue;
+    const gameType = interaction.values[0];
+
+    if (gameType === "vicecity2") {
+      // Vice City 2 - Only Auto Farm
+      data.product = "Vice City 2 Auto Farm";
+      saveAll();
+      
+      const durMenu = buildDurationMenu(ticketId, "viceautofarm", "vicecity2");
+      
+      await interaction.update({
+        embeds: [
+          new EmbedBuilder()
+            .setColor(COLOR_MAIN)
+            .setTitle("🏙️ Vice City 2 — Auto Farm (BETA)")
+            .setDescription("Select a duration below.")
+        ],
+        components: [new ActionRowBuilder().addComponents(durMenu)]
+      });
+      return;
+    }
+
+    if (gameType === "southbronx") {
+      // South Bronx - Show all scripts
+      const scriptMenu = new StringSelectMenuBuilder()
+        .setCustomId(`choose_script:${ticketId}`)
+        .setPlaceholder("Select script type...")
+        .addOptions([
+          { label: "Kill Aura", value: "killaura", description: "Aimbot / Kill aura" },
+          { label: "Multi Farm", value: "multifarm", description: "Multi Farm script" },
+          { label: "Combat (Silent Aim)", value: "combat", description: "Silent Aim included" },
+          { label: "Auto Farm", value: "autofarm", description: "Auto farming features" },
+          { label: "FPS Booster", value: "fps", description: "FPS Boost" }
+        ]);
+
+      await interaction.update({
+        embeds: [
+          new EmbedBuilder()
+            .setColor(COLOR_MAIN)
+            .setTitle("🏘️ South Bronx — Choose Script")
+            .setDescription("Select the type of script you want.")
+        ],
+        components: [new ActionRowBuilder().addComponents(scriptMenu)]
+      });
+      return;
+    }
+
+    return safeReply(interaction, { content: "Invalid game selection." });
+  }
+
+  if (customId.startsWith("choose_script:")) {
+    const [, ticketId] = customId.split(":");
+    const data = findOrder(ticketId);
+    if (!data || data.userId !== user.id) return safeReply(interaction, { content: "Not your order." });
+
+    const scriptValue = interaction.values[0];
+    const names = { killaura: "Kill Aura", multifarm: "Multi Farm", combat: "Combat (Silent Aim)", autofarm: "Auto Farm", fps: "FPS Booster" };
+    data.product = names[scriptValue] || scriptValue;
     saveAll();
 
-    const durMenu = buildDurationMenu(ticketId, subValue);
+    const durMenu = buildDurationMenu(ticketId, scriptValue);
 
     await interaction.update({
       embeds: [
@@ -2556,22 +2665,30 @@ async function handleSelect(interaction) {
     const dur = interaction.values[0];
     const productKey = getProductKey(data.product);
     if (!productKey) return safeReply(interaction, { content: "Unknown product." });
-    const price = PRICES[productKey]?.[dur];
+    
+    let price;
+    if (productKey === "southbronx") {
+      price = PRICES.southbronx[dur];
+    } else if (productKey === "viceautofarm") {
+      price = PRICES.viceautofarm[dur];
+    } else {
+      price = PRICES[productKey]?.[dur];
+    }
+    
     if (!price) return safeReply(interaction, { content: "Invalid duration/amount." });
 
     data.duration = dur;
-    data.variant = durationLabel(dur);
+    data.variant = ticketDurationLabel(dur);
     data.originalPrice = price;
     data.price = price;
     data.status = "payment";
     saveAll();
 
-    trackMessage(ticketId, user.tag, `[DURATION SELECTED] ${data.product} – ${durationLabel(dur)} at ${moneyIDR(price)} (${getUSDApprox(price)})`);
+    trackMessage(ticketId, user.tag, `[DURATION SELECTED] ${data.product} – ${ticketDurationLabel(dur)} at ${moneyIDR(price)} (${getUSDApprox(price)})`);
 
     const ch = guild.channels.cache.get(ticketId);
     if (!ch) return safeReply(interaction, { content: "Ticket channel not found." });
 
-    // ── Show discount code input ──────────────────────────────────────────
     const discountEmbed = new EmbedBuilder()
       .setColor(COLOR_MAIN)
       .setTitle("🎫 Got a Discount Code?")
