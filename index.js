@@ -141,16 +141,16 @@ const PRICES = {
     "perm": 80000
   },
   southbronx: {
-    "100k": 8000,
-    "200k": 16000,
-    "300k": 24000,
-    "400k": 32000,
-    "500k": 44000,
-    "600k": 52000,
-    "700k": 60000,
-    "800k": 68000,
-    "900k": 76000,
-    "1m": 84000
+    "100k": 9000,
+    "200k": 17000,
+    "300k": 25000,
+    "400k": 33000,
+    "500k": 45000,
+    "600k": 53000,
+    "700k": 61000,
+    "800k": 69000,
+    "900k": 77000,
+    "1m": 85000
   },
   viceautofarm: {
     "1d": 15000,
@@ -718,13 +718,20 @@ function pricingDetailEmbed() {
   if (PRICES.autofarm["perm"]) autofarmText += `• Lifetime: ${formatPriceIDRUSD(PRICES.autofarm["perm"])}`;
   embed.addFields({ name: "**Auto Farm** :", value: autofarmText, inline: false });
 
-  // South Bronx Cash
+  // South Bronx Cash - UPDATED with new prices
   let southbronxText = "";
   const currencyKeys = ["100k", "200k", "300k", "400k", "500k", "600k", "700k", "800k", "900k", "1m"];
   currencyKeys.forEach(k => {
     if (PRICES.southbronx[k]) {
       let label = k === "1m" ? "1.00m" : k;
-      southbronxText += `- ${label}: ${formatPriceIDRUSD(PRICES.southbronx[k])}\n`;
+      // Special case for 1m - hardcode to $6.00 USD
+      let displayPrice;
+      if (k === "1m") {
+        displayPrice = `IDR ${PRICES.southbronx[k].toLocaleString("id-ID")} | $6.00 USD`;
+      } else {
+        displayPrice = formatPriceIDRUSD(PRICES.southbronx[k]);
+      }
+      southbronxText += `- ${label}: ${displayPrice}\n`;
     }
   });
   embed.addFields({ name: "**South Bronx Cash ( VIA Transfer/Login Depends on the stocks )**", value: southbronxText, inline: false });
@@ -2340,10 +2347,16 @@ function buildDurationMenu(ticketId, productKey, gameType = null) {
     const currencyKeys = ["100k", "200k", "300k", "400k", "500k", "600k", "700k", "800k", "900k", "1m"];
     currencyKeys.forEach(k => {
       if (PRICES.southbronx[k]) {
+        let displayPrice;
+        if (k === "1m") {
+          displayPrice = `IDR ${PRICES.southbronx[k].toLocaleString("id-ID")} | $6.00 USD`;
+        } else {
+          displayPrice = formatPriceIDRUSD(PRICES.southbronx[k]);
+        }
         menu.addOptions({
           label: k === "1m" ? "1.00m" : k,
           value: k,
-          description: formatPriceIDRUSD(PRICES.southbronx[k])
+          description: displayPrice
         });
       }
     });
