@@ -82,7 +82,7 @@ const CONFIG = {
   ADMIN_ROLE_NAME: "dev",
   RESELLER_ROLE_ID: "1517159248012906607",
   BUYER_ROLE_ID: "1491434062164918313",
-  SUPPORT_TEAM_ROLE_ID: "YOUR_SUPPORT_TEAM_ROLE_ID", // <-- ADD YOUR ROLE ID HERE
+  SUPPORT_TEAM_ROLE_ID: "1526825805966082100", // Support Team Role ID
   AUTO_CLOSE_HOURS: 24,
   CURRENCY_RATE: 17000,
   BUYER_ROLE_NAME: "Subscriptions",
@@ -205,7 +205,6 @@ function getUSDPrice(productKey, duration) {
   if (USD_PRICES[productKey] && USD_PRICES[productKey][duration]) {
     return USD_PRICES[productKey][duration];
   }
-  // Fallback to calculation if not found
   const price = PRICES[productKey]?.[duration];
   if (price) {
     const baseUSD = price / 17000;
@@ -236,10 +235,9 @@ function requiresKey(productKey) {
   return ["killaura", "combat", "autofarm", "fps", "multifarm", "external", "viceautofarm"].includes(productKey);
 }
 
-// ── Check if user has support team role ─────────────────────────────────
 function isSupportTeam(member) {
   const supportRoleId = CONFIG.SUPPORT_TEAM_ROLE_ID;
-  if (!supportRoleId || supportRoleId === "YOUR_SUPPORT_TEAM_ROLE_ID") return false;
+  if (!supportRoleId) return false;
   return member.roles.cache.has(supportRoleId);
 }
 
@@ -1973,10 +1971,7 @@ async function handleButton(interaction) {
       permissionOverwrites: [
         { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
         { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-        // Add support team role to see all tickets
-        ...(CONFIG.SUPPORT_TEAM_ROLE_ID && CONFIG.SUPPORT_TEAM_ROLE_ID !== "YOUR_SUPPORT_TEAM_ROLE_ID" ? [
-          { id: CONFIG.SUPPORT_TEAM_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }
-        ] : [])
+        { id: CONFIG.SUPPORT_TEAM_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }
       ]
     });
     orders.push({
@@ -2385,7 +2380,7 @@ async function resetDropdown(interaction) {
 function buildDurationMenu(ticketId, productKey, gameType = null) {
   const menu = new StringSelectMenuBuilder()
     .setCustomId(`choose_duration:${ticketId}`)
-    .setPlaceholder("Select duration");
+    .setPlaceholder("Select amount");
 
   // For South Bronx Cash - show "Select amount"
   if (productKey === "southbronx") {
@@ -2457,10 +2452,7 @@ async function handleSelect(interaction) {
         permissionOverwrites: [
           { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
           { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-          // Add support team role to see all tickets
-          ...(CONFIG.SUPPORT_TEAM_ROLE_ID && CONFIG.SUPPORT_TEAM_ROLE_ID !== "YOUR_SUPPORT_TEAM_ROLE_ID" ? [
-            { id: CONFIG.SUPPORT_TEAM_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }
-          ] : [])
+          { id: CONFIG.SUPPORT_TEAM_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }
         ]
       });
 
@@ -2536,10 +2528,7 @@ async function handleSelect(interaction) {
       permissionOverwrites: [
         { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
         { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-        // Add support team role to see all tickets
-        ...(CONFIG.SUPPORT_TEAM_ROLE_ID && CONFIG.SUPPORT_TEAM_ROLE_ID !== "YOUR_SUPPORT_TEAM_ROLE_ID" ? [
-          { id: CONFIG.SUPPORT_TEAM_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }
-        ] : [])
+        { id: CONFIG.SUPPORT_TEAM_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }
       ]
     });
 
@@ -2750,6 +2739,29 @@ async function handleSelect(interaction) {
     const ch = guild.channels.cache.get(ticketId);
     if (!ch) return safeReply(interaction, { content: "Ticket channel not found." });
 
+    // UPDATED: Payment instructions with proper grammar
+    const paymentInstructionsEmbed = new EmbedBuilder()
+      .setColor(COLOR_YELLOW)
+      .setTitle("💳 Payment Instructions")
+      .setDescription(`
+**⚠️ IMPORTANT: Please read carefully before proceeding!**
+
+1️⃣ **Select your preferred payment method** from the dropdown menu below.
+2️⃣ **Send the exact amount** shown above to the provided payment details.
+3️⃣ **After completing your payment**, you **MUST** click the **"I've Paid ✅"** button below.
+
+📸 **Do not forget to provide payment evidence/screenshot** so our team can verify and confirm your purchase promptly.
+
+⏳ **Note:** Your order will be processed within 5-15 minutes after we receive your payment confirmation.
+
+Thank you for choosing **${CONFIG.BOT_NAME}**! 🚀
+      `);
+
+    await ch.send({
+      content: `<@${user.id}>`,
+      embeds: [paymentInstructionsEmbed]
+    });
+
     const discountEmbed = new EmbedBuilder()
       .setColor(COLOR_MAIN)
       .setTitle("🎫 Got a Discount Code?")
@@ -2786,7 +2798,7 @@ async function handleSelect(interaction) {
       embeds: [
         new EmbedBuilder()
           .setColor(COLOR_MAIN)
-          .setTitle("💳 Other Methods")
+          .setTitle("💳 Other Payment Methods")
           .addFields(
             { name: "PayPal", value: `${paypal.instructions}\n**Address:** \`${paypal.address}\``, inline: false },
             { name: "LTC", value: `${ltc.instructions}\n**Address:** \`${ltc.address}\``, inline: false }
@@ -2799,7 +2811,7 @@ async function handleSelect(interaction) {
         new EmbedBuilder()
           .setColor(COLOR_YELLOW)
           .setTitle(`🛒 Order #${data.orderId} — ${data.product}`)
-          .setDescription(`**1.** Select payment method below\n**2.** Pay using instructions above\n**3.** Click **I've Paid ✅**`)
+          .setDescription(`**1.** Select payment method below\n**2.** Pay using instructions above\n**3.** Click **I've Paid ✅** after sending payment\n**4.** Provide payment evidence/screenshot for verification`)
           .addFields(
             { name: "Product", value: data.product, inline: true },
             { name: "Variant", value: data.variant || "N/A", inline: true },
