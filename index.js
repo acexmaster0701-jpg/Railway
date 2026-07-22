@@ -35,7 +35,7 @@ const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID;
 const BANNER_URL = process.env.BANNER_URL || "";
-const QRIS_IMAGE = process.env.QRIS_IMAGE || "https://media.discordapp.net/attachments/1517559352209313943/1518601689089970226/Qris.jpg?ex=6a3a8388&is=6a393208&hm=e5f1d7e049b35eac017fa41de0acd505990e73b70018fec636a28d02d8d05891&=&format=webp";
+const QRIS_IMAGE = process.env.QRIS_IMAGE || "https://cdn.discordapp.com/attachments/1403667046910398586/1529478086637392073/IMG_4026.png?ex=6a6214f8&is=6a60c378&hm=b41338f6ea89d697c1259c7af291438e77d6a932361d2d6a5e923731bc672c73&";
 const PAYPAL_EMAIL = "wendypost73@gmail.com";
 const LTC_TEXT = process.env.LTC_TEXT || "Unavailable";
 
